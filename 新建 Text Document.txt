@@ -1,0 +1,76 @@
+在把项目选项页中的“C/C++”·“运行时库”选项设置为多线程DLL（/MD）——调试状态下为“多线程调试DLL（/MDd）”后，一切正常了！
+
+呃，严肃点说，Python的Windows版都是以/MD，也就是多线程DLL模式编译的，如果嵌入调用PyRun_SimpleFile，或者其它以解释器执行文件的API，都应该把项目编译成这个模式，不然就会发生内存访问错误。
+
+#include "python.h"
+
+int main(int argc, char *argv[])
+{
+        Py_Initialize();
+
+        FILE * fp = NULL;
+
+        fp = fopen("test.py", "r");
+
+        if (fp == NULL) 
+
+        {
+                return 1;
+        }
+
+        PyRun_SimpleFile(fp, "test.py");
+
+        Py_Finalize();
+
+        return 0;
+}
+
+
+class PyInitializer {
+public:
+  PyInitializer()  { Py_Initialize(); }
+  ~PyInitializer() { Py_Finalize(); }
+private:
+  PyInitializer(const PyInitializer &);
+  PyInitializer & operator=(const PyInitializer &);
+};
+
+
+根据str返回指针 char *
+pointer = ctypes.string_at(request_text, cltmsg_len)
+
+根据指针返回str
+rfile = StringIO(pointer)
+
+申请内存空间, array_type返回指针
+array_type = ctypes.c_char_p * 1024 * 1024
+cltmsg = array_type() 
+
+
+#include<stdio.h>  
+  
+void arrtest(char *p[],int c)  
+{  
+    int i;  
+    for (i = 0; i < c; i++) {  
+        printf("%s \n", p[i]);  
+        sprintf(p[i],"re%d",i);   
+    }  
+  
+    return;  
+}  
+  
+gcc arrtest.c -fPIC -shared -o arr.so  
+  
+  
+from ctypes import *  
+array_type = c_char_p * 4  
+names = array_type()  
+  
+names[0]="test1"  
+names[1]="test2"  
+names[2]="test3"  
+names[3]="test4"  
+api = CDLL('./arr.so')  
+  
+api.arrtest(names,4)  
